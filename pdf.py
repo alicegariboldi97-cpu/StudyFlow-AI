@@ -1,267 +1,228 @@
-# ==========================================================
-# IMPORTAZIONE LIBRERIE
-# ==========================================================
-
 import fitz
 import re
 from difflib import SequenceMatcher
 
 
+documento_globale = None
 
-# ==========================================================
+
+# ==============================
 # CARICAMENTO PDF
-# ==========================================================
+# ==============================
 
 def carica_pdf(percorso_pdf):
 
-    documento = fitz.open(percorso_pdf)
+    global documento_globale
 
-    return documento
+    documento_globale = fitz.open(percorso_pdf)
+
+    return documento_globale
 
 
 
-# ==========================================================
-# ESTRAZIONE TESTO PDF
-# ==========================================================
+# ==============================
+# ESTRAZIONE TESTO
+# ==============================
 
 def estrai_testo(documento):
 
-    testo_completo = ""
-
+    testo = ""
 
     for pagina in documento:
 
-        testo_completo += pagina.get_text()
-
-
-    return testo_completo
-
-
-
-# ==========================================================
-# NORMALIZZAZIONE TESTO
-# ==========================================================
-
-def normalizza_testo(testo):
-
-    testo = str(testo).lower()
-
-
-    testo = testo.replace(
-        "_",
-        " "
-    )
-
-
-    testo = testo.replace(
-        "-",
-        " "
-    )
-
-
-    testo = re.sub(
-        r"[^a-zàèéìòù\s]",
-        "",
-        testo
-    )
-
-
-    testo = " ".join(
-        testo.split()
-    )
-
+        testo += pagina.get_text()
 
     return testo
 
 
 
-# ==========================================================
-# CONFRONTO NOMI ESAMI
-# ==========================================================
+# ==============================
+# NORMALIZZAZIONE NOMI
+# ==============================
 
-def nome_simile(nome1, nome2):
+def normalizza(testo):
 
+    testo = testo.lower()
 
-    nome1 = normalizza_testo(nome1)
+    testo = testo.replace(
+        "à","a"
+    )
 
-    nome2 = normalizza_testo(nome2)
+    testo = testo.replace(
+        "è","e"
+    )
 
+    testo = testo.replace(
+        "é","e"
+    )
 
+    testo = re.sub(
+        r"[^a-z0-9 ]",
+        "",
+        testo
+    )
 
-    if nome1 in nome2 or nome2 in nome1:
+    return testo.strip()
 
-        return True
 
 
+# ==============================
+# TROVA NOME SIMILE
+# ==============================
 
-    rapporto = SequenceMatcher(
-        None,
-        nome1,
-        nome2
-    ).ratio()
+def trova_miglior_match(nome, testo):
 
 
+    nome_norm = normalizza(nome)
 
-    return rapporto >= 0.55
 
+    righe = testo.split("\n")
 
 
-# ==========================================================
-# ANALISI CALENDARIO PDF
-# ==========================================================
+    migliore = None
+    punteggio_migliore = 0
 
-def analizza_calendario(esami, documento):
 
+    for riga in righe:
 
-    pattern_data = r"\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}"
+        riga_norm = normalizza(riga)
 
 
+        if len(riga_norm)<5:
+            continue
 
-    for esame in esami:
 
-        esame["date_disponibili"] = []
+        punteggio = SequenceMatcher(
+            None,
+            nome_norm,
+            riga_norm
+        ).ratio()
 
 
+        if punteggio > punteggio_migliore:
 
-    for pagina in documento:
+            punteggio_migliore = punteggio
+            migliore = riga
 
 
-        tabelle = pagina.find_tables()
+    if punteggio_migliore > 0.55:
 
+        return migliore
 
 
-        for tabella in tabelle.tables:
+    return None
 
 
-            righe = tabella.extract()
 
+# ==============================
+# ESTRAZIONE DATE
+# ==============================
 
+def estrai_date_esami(testo, nome_esame):
 
-            for riga in righe:
 
+    righe = testo.split("\n")
 
-                testo_riga = " ".join(
-                    str(cella)
-                    for cella in riga
-                    if cella
-                )
 
+    date = []
 
 
-                testo_normale = normalizza_testo(
-                    testo_riga
-                )
+    trovato = False
 
 
+    for riga in righe:
 
-                date_trovate = re.findall(
-                    pattern_data,
-                    testo_riga
-                )
 
+        if normalizza(nome_esame) in normalizza(riga):
 
+            trovato=True
 
-                for esame in esami:
 
 
+        if trovato:
 
-                    if nome_simile(
-                        esame["nome"],
-                        testo_normale
-                    ):
 
-
-
-                        for data in date_trovate:
-
-
-                            data = (
-                                data
-                                .replace("-", "/")
-                                .replace(".", "/")
-                            )
-
-
-
-                            if data not in esame["date_disponibili"]:
-
-
-                                esame["date_disponibili"].append(
-                                    data
-                                )
-
-
-
-                        print(
-                            "Trovato:",
-                            esame["nome"],
-                            "|",
-                            esame["date_disponibili"]
-                        )
-
-
-
-    for esame in esami:
-
-
-        if len(esame["date_disponibili"]) == 0:
-
-
-            print(
-                "Non trovato:",
-                esame["nome"]
+            risultati = re.findall(
+                r"\d{2}/\d{2}/\d{4}",
+                riga
             )
 
 
-
-    return esami
-
-
-
-# ==========================================================
-# ESTRAZIONE DATE GENERALE
-# ==========================================================
-
-def estrai_date_esami(documento):
-
-
-    pattern_data = r"\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}"
+            date.extend(risultati)
 
 
 
-    date_trovate = []
+            if len(date)>0:
+
+                break
 
 
 
-    for numero, pagina in enumerate(documento):
-
-
-        testo = pagina.get_text()
+    return list(set(date))
 
 
 
-        date = re.findall(
-            pattern_data,
+# ==============================
+# ANALISI CALENDARIO
+# ==============================
+
+
+def analizza_calendario(
+        documento,
+        esami
+):
+
+
+    testo = estrai_testo(documento)
+
+
+
+    for esame in esami:
+
+
+        nome_originale = esame["nome"]
+
+
+        nome_pdf = trova_miglior_match(
+            nome_originale,
             testo
         )
 
 
 
-        for data in date:
+        if nome_pdf:
 
 
-            data = (
-                data
-                .replace("-", "/")
-                .replace(".", "/")
+            date = estrai_date_esami(
+                testo,
+                nome_pdf
+            )
+
+
+            esame["date_disponibili"]=date
+
+
+            print(
+                "Trovato:",
+                nome_originale,
+                "->",
+                nome_pdf,
+                date
             )
 
 
 
-            date_trovate.append(
-                data
+        else:
+
+
+            esame["date_disponibili"]=[]
+
+
+            print(
+                "Non trovato:",
+                nome_originale
             )
 
 
 
-    return date_trovate
+    return esami
