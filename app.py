@@ -1,28 +1,21 @@
 # ==========================================================
-# IMPORTAZIONE LIBRERIE
+# STUDYFLOW AI - APP PRINCIPALE
 # ==========================================================
 
-from calcoli import calcola_carico_studio
 
+from calcoli import calcola_carico_studio
 from pdf import (
     carica_pdf,
-    estrai_testo,
     analizza_calendario
 )
-
 from planner import (
     genera_piano_esami,
     crea_programma_studio,
     ricalcola_piano
 )
-
 from grafico import crea_grafico
 
 
-
-# ==========================================================
-# INIZIO PROGRAMMA
-# ==========================================================
 
 print("""
 ================================
@@ -37,21 +30,19 @@ Ti aiuterà a organizzare le tue sessioni di studio.
 # DATI STUDENTE
 # ==========================================================
 
+
 print("\nDATI STUDENTE")
 print("--------------------")
 
 
-nome = input(
-    "Inserisci nome: "
-)
-
+nome = input("Inserisci nome: ")
 
 universita = input(
     "Inserisci università: "
 )
 
 
-ore_studio = float(
+ore_giornaliere = float(
     input(
         "Ore di studio giornaliere: "
     )
@@ -61,7 +52,6 @@ ore_studio = float(
 
 print("\nDATI INSERITI")
 print("--------------------")
-
 
 print(
     "Nome:",
@@ -75,14 +65,16 @@ print(
 
 print(
     "Ore studio giornaliere:",
-    ore_studio
+    ore_giornaliere
 )
+
 
 
 
 # ==========================================================
 # INSERIMENTO ESAMI
 # ==========================================================
+
 
 print("\nINSERIMENTO ESAMI")
 print("--------------------")
@@ -104,7 +96,7 @@ for i in range(numero_esami):
 
 
     print(
-        f"\nEsame {i + 1}"
+        f"\nEsame {i+1}"
     )
 
 
@@ -133,24 +125,26 @@ print("\nESAMI INSERITI")
 print("--------------------")
 
 
-for esame in esami:
+for e in esami:
 
     print(
-        esame["nome"],
+        e["nome"],
         "|",
-        esame["cfu"],
+        e["cfu"],
         "CFU"
     )
 
 
 
+
 # ==========================================================
-# CARICO DI STUDIO
+# CARICO STUDIO
 # ==========================================================
+
 
 esami = calcola_carico_studio(
     esami,
-    ore_studio
+    ore_giornaliere
 )
 
 
@@ -159,22 +153,25 @@ print("\nCARICO DI STUDIO")
 print("--------------------")
 
 
-for esame in esami:
+for e in esami:
 
     print(
-        esame["nome"],
+        e["nome"],
         "|",
-        esame["cfu"],
+        e["cfu"],
         "CFU |",
-        esame["ore_studio"],
+        e["ore_studio"],
         "ore"
     )
 
 
 
+
+
 # ==========================================================
-# CARICAMENTO CALENDARIO PDF
+# PDF CALENDARIO
 # ==========================================================
+
 
 print("\nCaricamento calendario esami...")
 print("--------------------")
@@ -192,26 +189,18 @@ documento = carica_pdf(
 
 
 
-testo_completo = estrai_testo(
-    documento
-)
-
-
-
-# ==========================================================
-# COLLEGAMENTO ESAMI PDF
-# ==========================================================
-
 esami = analizza_calendario(
-    esami,
-    documento
+    documento,
+    esami
 )
 
 
 
+
 # ==========================================================
-# GENERAZIONE PIANO ESAMI
+# CREAZIONE PIANO
 # ==========================================================
+
 
 esami = genera_piano_esami(
     esami
@@ -223,17 +212,18 @@ print("\nPIANO ESAMI")
 print("--------------------")
 
 
-for esame in esami:
+for e in esami:
+
 
     print(
-        esame["nome"],
+        e["nome"],
         "|",
-        esame.get(
+        e.get(
             "data_consigliata",
-            "Nessuna data disponibile"
+            "Nessuna data"
         ),
         "|",
-        esame.get(
+        e.get(
             "tipo_piano",
             ""
         )
@@ -241,9 +231,8 @@ for esame in esami:
 
 
 
-# ==========================================================
-# GRAFICO
-# ==========================================================
+
+# grafico iniziale
 
 crea_grafico(
     esami
@@ -251,12 +240,17 @@ crea_grafico(
 
 
 
+
+
 # ==========================================================
 # FEEDBACK UTENTE
 # ==========================================================
 
+
 print(
-    "\nTi piace il piano di studio proposto?"
+"""
+Ti piace il piano di studio proposto?
+"""
 )
 
 
@@ -274,6 +268,7 @@ if risposta.lower() == "no":
     )
 
 
+
     esami = ricalcola_piano(
         esami,
         obiettivo
@@ -281,18 +276,28 @@ if risposta.lower() == "no":
 
 
 
-    print("\nPIANO OTTIMIZZATO")
-    print("--------------------")
+    print(
+        "\nPIANO OTTIMIZZATO"
+    )
+
+    print(
+        "--------------------"
+    )
 
 
-    for esame in esami:
+
+    for e in esami:
 
         print(
-            esame["nome"],
+            e["nome"],
             "|",
-            esame["data_consigliata"],
+            e.get(
+                "data_consigliata"
+            ),
             "|",
-            esame["tipo_piano"]
+            e.get(
+                "tipo_piano"
+            )
         )
 
 
@@ -303,21 +308,72 @@ if risposta.lower() == "no":
 
 
 
+else:
+
+
+    print(
+        "\nPerfetto! Piano confermato."
+    )
+
+
+
+
 # ==========================================================
 # PROGRAMMA DI STUDIO
 # ==========================================================
 
+
 esami = crea_programma_studio(
     esami,
-    ore_studio
+    ore_giornaliere
 )
 
 
 
-print("\nPROGRAMMA DI STUDIO CREATO")
-print("--------------------")
+print(
+"""
+===============================
+PROGRAMMA DI STUDIO GENERATO
+===============================
+"""
+)
+
+
+
+for e in esami:
+
+
+    print(
+        "\n",
+        e["nome"]
+    )
+
+
+    print(
+        "Inizio:",
+        e.get(
+            "inizio_studio",
+            ""
+        )
+    )
+
+
+    print(
+        "Giorni:",
+        len(
+            e.get(
+                "programma_studio",
+                []
+            )
+        )
+    )
+
 
 
 print(
-    "StudyFlow AI completato."
+"""
+===============================
+      StudioFlow AI terminato
+===============================
+"""
 )
