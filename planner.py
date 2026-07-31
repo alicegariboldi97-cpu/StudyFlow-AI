@@ -106,6 +106,12 @@ def crea_programma_studio(
     for esame in esami:
 
 
+        if esame["data_consigliata"] == "Nessuna data disponibile":
+
+            continue
+
+
+
         data_esame = datetime.strptime(
             esame["data_consigliata"],
             "%d/%m/%Y"
@@ -230,13 +236,14 @@ def ricalcola_piano(
             )
 
 
+
             if data_appello > data_limite:
 
                 continue
 
 
 
-            libero = True
+            disponibile = True
 
 
 
@@ -251,14 +258,15 @@ def ricalcola_piano(
                 )
 
 
+
                 if distanza < 21:
 
-                    libero = False
+                    disponibile = False
                     break
 
 
 
-            if libero:
+            if disponibile:
 
 
                 data_scelta = data_appello
