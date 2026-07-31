@@ -167,15 +167,14 @@ print(
     "\nCaricamento calendario esami..."
 )
 
-
-documento = carica_pdf()
-
-
-testo_completo = estrai_testo(
-    documento
+percorso_pdf = input(
+    "Inserisci il nome del file PDF: "
 )
 
 
+documento = carica_pdf(
+    percorso_pdf
+)
 
 # ==========================================================
 # ANALISI CALENDARIO
