@@ -1,30 +1,30 @@
-#==========================================
+# ==========================================================
 # IMPORTAZIONE LIBRERIE
-#==========================================
+# ==========================================================
 
 import fitz
 import re
 from google.colab import files
 
 
-#==========================================
-# CARICAMENTO DEL PDF
-#==========================================
+# ==========================================================
+# CARICAMENTO PDF
+# ==========================================================
 
 def carica_pdf():
 
-    uploaded = files.upload()
+    file_caricato = files.upload()
 
-    nome_pdf = list(uploaded.keys())[0]
+    nome_pdf = list(file_caricato.keys())[0]
 
     documento = fitz.open(nome_pdf)
 
     return documento
 
 
-#==========================================
-# TRASCRIZIONE DOCUMENTO
-#==========================================
+# ==========================================================
+# ESTRAZIONE TESTO DAL PDF
+# ==========================================================
 
 def estrai_testo(documento):
 
@@ -32,28 +32,29 @@ def estrai_testo(documento):
 
     for pagina in documento:
 
-        testo = pagina.get_text()
+        testo_pagina = pagina.get_text()
 
-        print(testo)
+        testo_completo += testo_pagina
 
-        testo_completo += testo
-
-    print(testo_completo)
 
     return testo_completo
 
 
-#==========================================
-# ANALISI DEL CALENDARIO ESAMI
-#==========================================
+# ==========================================================
+# CONTROLLO PRESENZA ESAMI NEL PDF
+# ==========================================================
 
 def analizza_calendario(esami, testo_completo):
+
+    testo_pdf = testo_completo.lower()
+
 
     for esame in esami:
 
         nome_esame = esame["nome"].replace("_", " ").lower()
 
-        if nome_esame in testo_completo.lower():
+
+        if nome_esame in testo_pdf:
 
             print("Trovato:", nome_esame)
 
@@ -61,12 +62,13 @@ def analizza_calendario(esami, testo_completo):
 
             print("Non trovato:", nome_esame)
 
+
     return esami
 
 
-#==========================================
-# RICERCA DELLE DATE PRESENTI NEL PDF
-#==========================================
+# ==========================================================
+# RICERCA DATE NEL PDF
+# ==========================================================
 
 def cerca_date(documento):
 
@@ -74,98 +76,102 @@ def cerca_date(documento):
 
     date_trovate = []
 
+
     for numero_pagina, pagina in enumerate(documento):
 
         testo = pagina.get_text()
 
         date = re.findall(pattern_data, testo)
 
+
         for data in date:
 
             date_trovate.append(
-                {"pagina": numero_pagina + 1,
-                    "data": data })
+                {
+                    "pagina": numero_pagina + 1,
+                    "data": data
+                }
+            )
 
-    print(date_trovate)
 
     return date_trovate
 
 
-#==========================================
-# LETTURA DELLE TABELLE
-#==========================================
+# ==========================================================
+# LETTURA TABELLE PDF
+# ==========================================================
 
 def leggi_tabelle(documento):
+
+    tabelle_pdf = []
+
 
     for numero_pagina, pagina in enumerate(documento):
 
         tabelle = pagina.find_tables()
 
-        print("Pagina:", numero_pagina + 1)
-
-        print("Numero tabelle:", len(tabelle.tables))
 
         for tabella in tabelle.tables:
 
             dati = tabella.extract()
 
-            for riga in dati[:5]:
+            tabelle_pdf.append(
+                {
+                    "pagina": numero_pagina + 1,
+                    "dati": dati
+                }
+            )
 
-                print(riga)
 
-            print("----------------")
+    return tabelle_pdf
 
 
-#==========================================
-# GENERAZIONE DEL CALENDARIO ESAMI
-#==========================================
+# ==========================================================
+# ASSOCIAZIONE ESAMI E DATE
+# ==========================================================
 
-def genera_calendario_esami(documento, esami):
+def estrai_date_esami(documento, esami):
 
     pattern_data = r"\d{2}/\d{2}/\d{4}"
+
+    date_correnti = []
+
 
     for esame in esami:
 
         esame["date_disponibili"] = []
 
-    date_correnti = []
 
     for pagina in documento:
 
         tabelle = pagina.find_tables()
 
+
         for tabella in tabelle.tables:
 
             righe = tabella.extract()
+
 
             for riga in righe:
 
                 testo_riga = " ".join(
                     str(cella)
                     for cella in riga
-                    if cella)
+                    if cella
+                )
+
 
                 if "Giorno" in testo_riga:
 
-                    date_correnti = re.findall(
-                        pattern_data,
-                        testo_riga)
+                    date_correnti = re.findall(pattern_data, testo_riga)
 
-                    print("Nuovo blocco date:", date_correnti)
 
                 for esame in esami:
 
-                    nome_esame = (
-                        esame["nome"]
-                        .replace("_", " ")
-                        .lower())
+                    nome_esame = esame["nome"].replace("_", " ").lower()
+
 
                     if nome_esame in testo_riga.lower():
-
-                        print("Trovato:",
-                            nome_esame,
-                            "->",
-                            date_correnti )
 
                         for data in date_correnti:
 
@@ -173,12 +179,5 @@ def genera_calendario_esami(documento, esami):
 
                                 esame["date_disponibili"].append(data)
 
-    for esame in esami:
-
-        print()
-
-        print(esame["nome"])
-
-        print(esame["date_disponibili"])
 
     return esami
