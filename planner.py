@@ -164,9 +164,7 @@ def crea_programma_studio(
 
 def ricalcola_piano(esami, obiettivo_fine):
 
-
     mese, anno = obiettivo_fine.split("/")
-
 
     data_limite = datetime(
         int(anno),
@@ -175,8 +173,7 @@ def ricalcola_piano(esami, obiettivo_fine):
     )
 
 
-    date_assegnate = []
-
+    esami_assegnati = []
 
 
     for esame in esami:
@@ -197,7 +194,6 @@ def ricalcola_piano(esami, obiettivo_fine):
             )
 
 
-
             if data_appello > data_limite:
 
                 continue
@@ -214,38 +210,46 @@ def ricalcola_piano(esami, obiettivo_fine):
 
 
 
+            # tempo sufficiente per preparare l'esame
+
             if giorni_disponibili >= esame["giorni_preparazione"]:
 
                 punteggio += 50
 
             else:
 
-                punteggio -= 30
+                punteggio -= 50
 
 
 
-            if esame["cfu"] >= 9 and giorni_disponibili > 60:
+            # peso CFU
 
-                punteggio += 30
-
-
-            elif esame["cfu"] == 6 and giorni_disponibili > 30:
+            if esame["cfu"] >= 9:
 
                 punteggio += 20
 
+            else:
+
+                punteggio += 10
 
 
-            for data_occupata in date_assegnate:
+
+            # evita sovrapposizioni
+
+            for altro_esame in esami_assegnati:
 
 
                 distanza = abs(
-                    (data_appello - data_occupata).days
+                    (
+                        data_appello -
+                        altro_esame
+                    ).days
                 )
 
 
                 if distanza < 21:
 
-                    punteggio -= 50
+                    punteggio -= 100
 
 
 
@@ -269,7 +273,7 @@ def ricalcola_piano(esami, obiettivo_fine):
             esame["tipo_piano"] = "Distribuito"
 
 
-            date_assegnate.append(
+            esami_assegnati.append(
                 data_migliore
             )
 
@@ -286,7 +290,6 @@ def ricalcola_piano(esami, obiettivo_fine):
             esame["tipo_piano"] = (
                 "Oltre obiettivo"
             )
-
 
 
     return esami
