@@ -27,3 +27,19 @@ cfu_esami = {"neuropsicologia": 6,
             "filosofia_della_mente": 9,
             "psicologia_clinica":9}
 print (cfu_esami)
+#==========================================
+#feedback utente
+#==========================================
+
+print("\nTi piace il piano di studio proposto?")
+risposta = input("Rispondi (si/no): ").strip().lower()
+
+if risposta == "si":
+    print("\nOttimo! Buono studio!")
+
+elif risposta == "no":
+    print("\nEntro quando vorresti aver completato tutti gli esami?")
+    obiettivo_fine = input("Inserisci mese e anno (MM/AAAA): ")
+
+else:
+    print("\nRisposta non valida.")
