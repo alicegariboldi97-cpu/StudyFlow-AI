@@ -21,7 +21,10 @@ def genera_piano_esami(esami):
 
         date_esame = sorted(
             esame["date_disponibili"],
-            key=lambda x: datetime.strptime(x, "%d/%m/%Y")
+            key=lambda x: datetime.strptime(
+                x,
+                "%d/%m/%Y"
+            )
         )
 
 
@@ -63,25 +66,31 @@ def genera_piano_esami(esami):
                 "%d/%m/%Y"
             )
 
-            esame["tipo_piano"] = "Sessione ravvicinata"
+            esame["tipo_piano"] = (
+                "Sessione ravvicinata"
+            )
 
 
         else:
 
-            esame["tipo_piano"] = "Distribuito"
+            esame["tipo_piano"] = (
+                "Distribuito"
+            )
 
 
 
-        esame["data_consigliata"] = scelta.strftime(
-            "%d/%m/%Y"
+        esame["data_consigliata"] = (
+            scelta.strftime("%d/%m/%Y")
         )
 
 
-        date_assegnate.append(scelta)
-
+        date_assegnate.append(
+            scelta
+        )
 
 
     return esami
+
 
 
 # ==========================================================
@@ -103,18 +112,23 @@ def crea_programma_studio(
         )
 
 
-        giorni = esame["giorni_preparazione"]
-
-        ore_totali = esame["ore_studio"]
-
-
-        inizio = data_esame - timedelta(
-            days=giorni
+        giorni_preparazione = (
+            esame["giorni_preparazione"]
         )
 
 
-        esame["inizio_studio"] = inizio.strftime(
-            "%d/%m/%Y"
+        ore_totali = (
+            esame["ore_studio"]
+        )
+
+
+        inizio = data_esame - timedelta(
+            days=giorni_preparazione
+        )
+
+
+        esame["inizio_studio"] = (
+            inizio.strftime("%d/%m/%Y")
         )
 
 
@@ -126,10 +140,13 @@ def crea_programma_studio(
 
 
 
-        while giorno < data_esame and ore_rimanenti > 0:
+        while (
+            giorno < data_esame
+            and ore_rimanenti > 0
+        ):
 
 
-            ore_oggi = min(
+            ore_giornaliere = min(
                 media_studio_ore_giornaliere,
                 ore_rimanenti
             )
@@ -140,31 +157,41 @@ def crea_programma_studio(
                     "giorno": giorno.strftime(
                         "%d/%m/%Y"
                     ),
-                    "ore": ore_oggi
+                    "ore": ore_giornaliere
                 }
             )
 
 
-            ore_rimanenti -= ore_oggi
-
-            giorno += timedelta(days=1)
+            ore_rimanenti -= ore_giornaliere
 
 
+            giorno += timedelta(
+                days=1
+            )
 
-        esame["programma_studio"] = calendario
 
+
+        esame["programma_studio"] = (
+            calendario
+        )
 
 
     return esami
+
 
 
 # ==========================================================
 # RICALCOLO PIANO DOPO FEEDBACK UTENTE
 # ==========================================================
 
-def ricalcola_piano(esami, obiettivo_fine):
+def ricalcola_piano(
+    esami,
+    obiettivo_fine
+):
+
 
     mese, anno = obiettivo_fine.split("/")
+
 
     data_limite = datetime(
         int(anno),
@@ -173,19 +200,28 @@ def ricalcola_piano(esami, obiettivo_fine):
     )
 
 
-    esami_assegnati = []
+    date_scelte = []
+
 
 
     for esame in esami:
 
 
-        punteggio_migliore = -999
-
-        data_migliore = None
+        data_scelta = None
 
 
 
-        for data in esame["date_disponibili"]:
+        date_disponibili = sorted(
+            esame["date_disponibili"],
+            key=lambda x: datetime.strptime(
+                x,
+                "%d/%m/%Y"
+            )
+        )
+
+
+
+        for data in date_disponibili:
 
 
             data_appello = datetime.strptime(
@@ -200,83 +236,53 @@ def ricalcola_piano(esami, obiettivo_fine):
 
 
 
-            punteggio = 0
+            libero = True
 
 
 
-            giorni_disponibili = (
-                data_appello - datetime.today()
-            ).days
-
-
-
-            # tempo sufficiente per preparare l'esame
-
-            if giorni_disponibili >= esame["giorni_preparazione"]:
-
-                punteggio += 50
-
-            else:
-
-                punteggio -= 50
-
-
-
-            # peso CFU
-
-            if esame["cfu"] >= 9:
-
-                punteggio += 20
-
-            else:
-
-                punteggio += 10
-
-
-
-            # evita sovrapposizioni
-
-            for altro_esame in esami_assegnati:
+            for altra_data in date_scelte:
 
 
                 distanza = abs(
                     (
                         data_appello -
-                        altro_esame
+                        altra_data
                     ).days
                 )
 
 
                 if distanza < 21:
 
-                    punteggio -= 100
+                    libero = False
+                    break
 
 
 
-            if punteggio > punteggio_migliore:
+            if libero:
 
 
-                punteggio_migliore = punteggio
+                data_scelta = data_appello
 
-                data_migliore = data_appello
-
-
-
-        if data_migliore:
+                break
 
 
-            esame["data_consigliata"] = data_migliore.strftime(
-                "%d/%m/%Y"
+
+        if data_scelta:
+
+
+            esame["data_consigliata"] = (
+                data_scelta.strftime("%d/%m/%Y")
             )
 
 
-            esame["tipo_piano"] = "Distribuito"
-
-
-            esami_assegnati.append(
-                data_migliore
+            esame["tipo_piano"] = (
+                "Distribuito"
             )
 
+
+            date_scelte.append(
+                data_scelta
+            )
 
 
         else:
@@ -290,6 +296,7 @@ def ricalcola_piano(esami, obiettivo_fine):
             esame["tipo_piano"] = (
                 "Oltre obiettivo"
             )
+
 
 
     return esami
