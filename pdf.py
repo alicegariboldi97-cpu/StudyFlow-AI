@@ -53,6 +53,12 @@ def normalizza_testo(testo):
     )
 
 
+    testo = testo.replace(
+        "-",
+        " "
+    )
+
+
     testo = re.sub(
         r"[^a-zàèéìòù\s]",
         "",
@@ -82,6 +88,12 @@ def nome_simile(nome1, nome2):
 
 
 
+    if nome1 in nome2 or nome2 in nome1:
+
+        return True
+
+
+
     rapporto = SequenceMatcher(
         None,
         nome1,
@@ -90,7 +102,7 @@ def nome_simile(nome1, nome2):
 
 
 
-    return rapporto >= 0.70
+    return rapporto >= 0.55
 
 
 
@@ -136,6 +148,12 @@ def analizza_calendario(esami, documento):
 
 
 
+                testo_normale = normalizza_testo(
+                    testo_riga
+                )
+
+
+
                 date_trovate = re.findall(
                     pattern_data,
                     testo_riga
@@ -149,7 +167,7 @@ def analizza_calendario(esami, documento):
 
                     if nome_simile(
                         esame["nome"],
-                        testo_riga
+                        testo_normale
                     ):
 
 
@@ -157,8 +175,7 @@ def analizza_calendario(esami, documento):
                         for data in date_trovate:
 
 
-
-                            data_pulita = (
+                            data = (
                                 data
                                 .replace("-", "/")
                                 .replace(".", "/")
@@ -166,18 +183,20 @@ def analizza_calendario(esami, documento):
 
 
 
-                            if data_pulita not in esame["date_disponibili"]:
+                            if data not in esame["date_disponibili"]:
 
 
                                 esame["date_disponibili"].append(
-                                    data_pulita
+                                    data
                                 )
 
 
 
                         print(
                             "Trovato:",
-                            esame["nome"]
+                            esame["nome"],
+                            "|",
+                            esame["date_disponibili"]
                         )
 
 
@@ -200,7 +219,7 @@ def analizza_calendario(esami, documento):
 
 
 # ==========================================================
-# ESTRAZIONE DATE GENERICHE
+# ESTRAZIONE DATE GENERALE
 # ==========================================================
 
 def estrai_date_esami(documento):
@@ -231,7 +250,7 @@ def estrai_date_esami(documento):
         for data in date:
 
 
-            data_pulita = (
+            data = (
                 data
                 .replace("-", "/")
                 .replace(".", "/")
@@ -240,10 +259,7 @@ def estrai_date_esami(documento):
 
 
             date_trovate.append(
-                {
-                    "pagina": numero + 1,
-                    "data": data_pulita
-                }
+                data
             )
 
 
