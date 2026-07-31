@@ -1,27 +1,28 @@
-# ==========================================================
-# IMPORTAZIONE LIBRERIE
-# ==========================================================
-
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from datetime import datetime
+import matplotlib.pyplot as plt
 
-
-# ==========================================================
-# CREAZIONE GRAFICO PIANO DI STUDIO
-# ==========================================================
 
 def crea_grafico(esami):
 
     esami_validi = []
 
-
     for esame in esami:
 
-        if esame["data_consigliata"] != "Nessuna data disponibile":
+        if (
+            "data_consigliata" not in esame
+            or esame["data_consigliata"] == "Nessuna data disponibile"
+        ):
+            continue
 
-            esami_validi.append(esame)
+        if "inizio_studio" not in esame:
+            continue
 
+        esami_validi.append(esame)
+
+
+    if not esami_validi:
+        print("Nessun dato disponibile per il grafico")
+        return
 
 
     esami_ordinati = sorted(
@@ -33,119 +34,45 @@ def crea_grafico(esami):
     )
 
 
-
     nomi = []
-
     inizi = []
-
     durate = []
-
-    date_esame = []
-
 
 
     for esame in esami_ordinati:
-
 
         inizio = datetime.strptime(
             esame["inizio_studio"],
             "%d/%m/%Y"
         )
 
-
         fine = datetime.strptime(
             esame["data_consigliata"],
             "%d/%m/%Y"
         )
 
-
-        nomi.append(
-            esame["nome"].replace("_", " ")
-        )
+        giorni = (fine - inizio).days
 
 
-        inizi.append(
-            inizio
-        )
-
-
-        durate.append(
-            (fine - inizio).days
-        )
-
-
-        date_esame.append(
-            fine
-        )
+        nomi.append(esame["nome"])
+        inizi.append(inizio)
+        durate.append(giorni)
 
 
 
-    fig, ax = plt.subplots(
-        figsize=(12, 7)
+    fig, ax = plt.subplots(figsize=(12,7))
+
+
+    ax.barh(
+        nomi,
+        durate,
+        left=inizi
     )
 
 
-
-    for i in range(len(nomi)):
-
-        ax.barh(
-            i,
-            durate[i],
-            left=inizi[i],
-            height=0.5
-        )
-
-
-        ax.axvline(
-            date_esame[i],
-            linewidth=1
-        )
-
-
-
-    ax.set_yticks(
-        range(len(nomi))
-    )
-
-
-    ax.set_yticklabels(
-        nomi
-    )
-
-
-    ax.xaxis.set_major_locator(
-        mdates.MonthLocator()
-    )
-
-
-    ax.xaxis.set_major_formatter(
-        mdates.DateFormatter("%m/%Y")
-    )
-
-
-    plt.xticks(
-        rotation=45
-    )
-
-
-    ax.set_title(
-        "Piano annuale di studio"
-    )
-
-
-    ax.set_xlabel(
-        "Periodo di preparazione"
-    )
-
-
-    ax.set_ylabel(
-        "Esami"
-    )
-
-
-    ax.grid(
-        axis="x"
-    )
+    ax.set_xlabel("Periodo di studio")
+    ax.set_ylabel("Esami")
+    ax.set_title("Piano di studio StudyFlow AI")
 
 
     plt.tight_layout()
