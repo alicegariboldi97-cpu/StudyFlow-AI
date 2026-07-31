@@ -69,7 +69,6 @@ print(
 
 
 
-
 # ==========================================================
 # INSERIMENTO ESAMI
 # ==========================================================
@@ -92,16 +91,13 @@ esami = []
 
 for i in range(numero_esami):
 
-
     print(
         f"\nEsame {i+1}"
     )
 
-
     nome_esame = input(
         "Nome esame: "
     )
-
 
     cfu = int(
         input(
@@ -109,14 +105,12 @@ for i in range(numero_esami):
         )
     )
 
-
     esami.append(
         {
             "nome": nome_esame,
             "cfu": cfu
         }
     )
-
 
 
 
@@ -132,8 +126,6 @@ for e in esami:
         e["cfu"],
         "CFU"
     )
-
-
 
 
 
@@ -166,8 +158,6 @@ for e in esami:
 
 
 
-
-
 # ==========================================================
 # CARICAMENTO PDF
 # ==========================================================
@@ -196,8 +186,6 @@ esami = analizza_calendario(
 
 
 
-
-
 # ==========================================================
 # GENERAZIONE PIANO ESAMI
 # ==========================================================
@@ -215,7 +203,6 @@ print("--------------------")
 
 for e in esami:
 
-
     print(
         e["nome"],
         "|",
@@ -229,9 +216,6 @@ for e in esami:
             ""
         )
     )
-
-
-
 
 
 
@@ -261,39 +245,37 @@ if risposta.lower() == "no":
     )
 
 
-
     esami = ricalcola_piano(
         esami,
         obiettivo
     )
 
 
-
     print(
         "\nPIANO OTTIMIZZATO"
     )
+
 
     print(
         "--------------------"
     )
 
 
-
     for e in esami:
-
 
         print(
             e["nome"],
             "|",
             e.get(
-                "data_consigliata"
+                "data_consigliata",
+                "Nessuna data"
             ),
             "|",
             e.get(
-                "tipo_piano"
+                "tipo_piano",
+                ""
             )
         )
-
 
 
 else:
@@ -304,10 +286,8 @@ else:
 
 
 
-
-
 # ==========================================================
-# CREAZIONE PROGRAMMA STUDIO
+# PROGRAMMA STUDIO
 # ==========================================================
 
 
@@ -318,18 +298,24 @@ esami = crea_programma_studio(
 
 
 
-
-
 # ==========================================================
 # GRAFICO
 # ==========================================================
 
 
-crea_grafico(
+print("\nGenerazione grafico...")
+
+
+fig = crea_grafico(
     esami
 )
 
 
+if fig:
+
+    import matplotlib.pyplot as plt
+
+    plt.show()
 
 
 
@@ -349,7 +335,6 @@ PROGRAMMA DI STUDIO GENERATO
 
 
 for e in esami:
-
 
     print(
         "\n",
