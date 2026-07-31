@@ -21,12 +21,13 @@ def carica_pdf(percorso_pdf):
 
 
 # ==========================================================
-# ESTRAZIONE TESTO
+# ESTRAZIONE TESTO PDF
 # ==========================================================
 
 def estrai_testo(documento):
 
     testo_completo = ""
+
 
     for pagina in documento:
 
@@ -43,9 +44,14 @@ def estrai_testo(documento):
 
 def normalizza_testo(testo):
 
-    testo = testo.lower()
+    testo = str(testo).lower()
 
-    testo = testo.replace("_", " ")
+
+    testo = testo.replace(
+        "_",
+        " "
+    )
+
 
     testo = re.sub(
         r"[^a-zàèéìòù\s]",
@@ -53,41 +59,50 @@ def normalizza_testo(testo):
         testo
     )
 
+
     testo = " ".join(
         testo.split()
     )
+
 
     return testo
 
 
 
 # ==========================================================
-# CONFRONTO NOMI
+# CONFRONTO NOMI ESAMI
 # ==========================================================
 
 def nome_simile(nome1, nome2):
+
 
     nome1 = normalizza_testo(nome1)
 
     nome2 = normalizza_testo(nome2)
 
 
-    risultato = SequenceMatcher(
+
+    rapporto = SequenceMatcher(
         None,
         nome1,
         nome2
     ).ratio()
 
 
-    return risultato >= 0.70
+
+    return rapporto >= 0.70
 
 
 
 # ==========================================================
-# ANALISI CALENDARIO
+# ANALISI CALENDARIO PDF
 # ==========================================================
 
-def analizza_calendario(esami, testo_completo):
+def analizza_calendario(esami, documento):
+
+
+    pattern_data = r"\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}"
+
 
 
     for esame in esami:
@@ -95,14 +110,8 @@ def analizza_calendario(esami, testo_completo):
         esame["date_disponibili"] = []
 
 
-    data_corrente = []
 
-
-    pattern_data = r"\d{2}/\d{2}/\d{4}"
-
-
-
-    for pagina in documento_globale:
+    for pagina in documento:
 
 
         tabelle = pagina.find_tables()
@@ -126,17 +135,16 @@ def analizza_calendario(esami, testo_completo):
                 )
 
 
-                if "Giorno" in testo_riga:
 
-
-                    data_corrente = re.findall(
-                        pattern_data,
-                        testo_riga
-                    )
+                date_trovate = re.findall(
+                    pattern_data,
+                    testo_riga
+                )
 
 
 
                 for esame in esami:
+
 
 
                     if nome_simile(
@@ -145,22 +153,45 @@ def analizza_calendario(esami, testo_completo):
                     ):
 
 
-                        for data in data_corrente:
+
+                        for data in date_trovate:
 
 
-                            if data not in esame["date_disponibili"]:
+
+                            data_pulita = (
+                                data
+                                .replace("-", "/")
+                                .replace(".", "/")
+                            )
+
+
+
+                            if data_pulita not in esame["date_disponibili"]:
+
 
                                 esame["date_disponibili"].append(
-                                    data
+                                    data_pulita
                                 )
+
 
 
                         print(
                             "Trovato:",
-                            esame["nome"],
-                            "->",
-                            data_corrente
+                            esame["nome"]
                         )
+
+
+
+    for esame in esami:
+
+
+        if len(esame["date_disponibili"]) == 0:
+
+
+            print(
+                "Non trovato:",
+                esame["nome"]
+            )
 
 
 
@@ -169,19 +200,25 @@ def analizza_calendario(esami, testo_completo):
 
 
 # ==========================================================
-# ESTRAZIONE DATE GENERALE
+# ESTRAZIONE DATE GENERICHE
 # ==========================================================
 
 def estrai_date_esami(documento):
 
-    date_trovate = []
 
     pattern_data = r"\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}"
 
 
-    for pagina, numero in zip(documento, range(len(documento))):
+
+    date_trovate = []
+
+
+
+    for numero, pagina in enumerate(documento):
+
 
         testo = pagina.get_text()
+
 
 
         date = re.findall(
@@ -190,14 +227,25 @@ def estrai_date_esami(documento):
         )
 
 
+
         for data in date:
+
+
+            data_pulita = (
+                data
+                .replace("-", "/")
+                .replace(".", "/")
+            )
+
+
 
             date_trovate.append(
                 {
                     "pagina": numero + 1,
-                    "data": data
+                    "data": data_pulita
                 }
             )
+
 
 
     return date_trovate
