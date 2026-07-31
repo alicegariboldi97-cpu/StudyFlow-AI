@@ -1,40 +1,40 @@
 # ==========================================================
-# IMPORTAZIONE MODULI
+# IMPORTAZIONE LIBRERIE
 # ==========================================================
 
 from calcoli import calcola_carico_studio
 from pdf import (
     carica_pdf,
     estrai_testo,
-    analizza_calendario,
-    estrai_date_esami
+    analizza_calendario
 )
 from planner import (
     genera_piano_esami,
-    ricalcola_piano,
-    crea_programma_studio
+    crea_programma_studio,
+    ricalcola_piano
 )
 from grafico import crea_grafico
 
 
+
 # ==========================================================
-# BENVENUTO
+# INTESTAZIONE
 # ==========================================================
 
-print("================================")
-print("        StudyFlow AI")
-print("================================")
+print("""
+================================
+        StudyFlow AI
+================================
+Ti aiuterà a organizzare le tue sessioni di studio.
+""")
 
-print(
-    "Ti aiuterà a organizzare le tue sessioni di studio.\n"
-)
 
 
 # ==========================================================
 # DATI STUDENTE
 # ==========================================================
 
-print("DATI STUDENTE")
+print("\nDATI STUDENTE")
 print("--------------------")
 
 
@@ -48,11 +48,12 @@ universita = input(
 )
 
 
-media_studio_ore_giornaliere = float(
+ore_studio = float(
     input(
         "Ore di studio giornaliere: "
     )
 )
+
 
 
 print("\nDATI INSERITI")
@@ -70,7 +71,7 @@ print(
 
 print(
     "Ore studio giornaliere:",
-    media_studio_ore_giornaliere
+    ore_studio
 )
 
 
@@ -90,14 +91,16 @@ numero_esami = int(
 )
 
 
-cfu_esami = {}
+
+esami = []
+
 
 
 for i in range(numero_esami):
 
+
     print(
-        "\nEsame",
-        i + 1
+        f"\nEsame {i+1}"
     )
 
 
@@ -113,7 +116,12 @@ for i in range(numero_esami):
     )
 
 
-    cfu_esami[nome_esame] = cfu
+    esami.append(
+        {
+            "nome": nome_esame,
+            "cfu": cfu
+        }
+    )
 
 
 
@@ -121,25 +129,25 @@ print("\nESAMI INSERITI")
 print("--------------------")
 
 
-for esame, cfu in cfu_esami.items():
+for esame in esami:
 
     print(
-        esame,
+        esame["nome"],
         "|",
-        cfu,
+        esame["cfu"],
         "CFU"
     )
 
 
 
 # ==========================================================
-# CALCOLO CARICO DI STUDIO
+# CALCOLO CARICO STUDIO
 # ==========================================================
 
 esami = calcola_carico_studio(
-    cfu_esami,
-    media_studio_ore_giornaliere
+    esami
 )
+
 
 
 print("\nCARICO DI STUDIO")
@@ -147,6 +155,7 @@ print("--------------------")
 
 
 for esame in esami:
+
 
     print(
         esame["nome"],
@@ -160,38 +169,44 @@ for esame in esami:
 
 
 # ==========================================================
-# CARICAMENTO CALENDARIO PDF
+# CARICAMENTO PDF
 # ==========================================================
 
-print(
-    "\nCaricamento calendario esami..."
-)
+print("\nCaricamento calendario esami...")
+print("--------------------")
 
-percorso_pdf = input(
+
+nome_pdf = input(
     "Inserisci il nome del file PDF: "
 )
 
 
+
 documento = carica_pdf(
-    percorso_pdf
+    nome_pdf
 )
 
-# ==========================================================
-# ANALISI CALENDARIO
-# ==========================================================
+
 
 testo_completo = estrai_testo(
     documento
 )
 
 
-esami = analizza_calendario(
-    esami,
-    testo_completo
-)
 
 # ==========================================================
-# GENERAZIONE PRIMO PIANO
+# MATCH ESAMI PDF
+# ==========================================================
+
+esami = analizza_calendario(
+    esami,
+    documento
+)
+
+
+
+# ==========================================================
+# CREAZIONE PIANO ESAMI
 # ==========================================================
 
 esami = genera_piano_esami(
@@ -199,26 +214,33 @@ esami = genera_piano_esami(
 )
 
 
-print(
-    "\nPIANO ESAMI"
-)
 
-print(
-    "--------------------"
-)
+print("\nPIANO ESAMI")
+print("--------------------")
 
 
 for esame in esami:
 
+
     print(
         esame["nome"],
         "|",
-        esame["data_consigliata"],
+        esame.get(
+            "data_consigliata",
+            "Nessuna data"
+        ),
         "|",
-        esame["tipo_piano"]
+        esame.get(
+            "tipo_piano",
+            ""
+        )
     )
 
 
+
+# ==========================================================
+# GRAFICO
+# ==========================================================
 
 crea_grafico(
     esami
@@ -237,33 +259,33 @@ print(
 
 risposta = input(
     "Rispondi (si/no): "
-).lower()
+)
 
 
 
-if risposta == "no":
+if risposta.lower() == "no":
 
-    obiettivo_fine = input(
+
+    obiettivo = input(
         "Inserisci mese e anno obiettivo (MM/AAAA): "
     )
 
 
+
     esami = ricalcola_piano(
         esami,
-        obiettivo_fine
+        obiettivo
     )
 
 
-    print(
-        "\nPIANO OTTIMIZZATO"
-    )
 
-    print(
-        "--------------------"
-    )
+    print("\nPIANO OTTIMIZZATO")
+    print("--------------------")
+
 
 
     for esame in esami:
+
 
         print(
             esame["nome"],
@@ -275,21 +297,27 @@ if risposta == "no":
 
 
 
+    crea_grafico(
+        esami
+    )
+
+
+
 # ==========================================================
-# PROGRAMMA STUDIO
+# PROGRAMMA DI STUDIO
 # ==========================================================
 
 esami = crea_programma_studio(
     esami,
-    media_studio_ore_giornaliere
+    ore_studio
 )
 
 
 
-# ==========================================================
-# GRAFICO FINALE
-# ==========================================================
+print("\nPROGRAMMA DI STUDIO CREATO")
+print("--------------------")
 
-crea_grafico(
-    esami
+
+print(
+    "StudyFlow AI ha completato il piano."
 )
