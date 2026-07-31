@@ -303,19 +303,109 @@ esami = crea_programma_studio(
 # ==========================================================
 
 
-print("\nGenerazione grafico...")
+print("\nAVVIO CREAZIONE GRAFICO...")
+print("--------------------")
 
 
-fig = crea_grafico(
-    esami
+try:
+
+    fig = crea_grafico(
+        esami
+    )
+
+
+    if fig:
+
+        print(
+            "Grafico creato correttamente"
+        )
+
+
+    else:
+
+        print(
+            "Grafico non creato: dati mancanti"
+        )
+
+
+except Exception as errore:
+
+    print(
+        "ERRORE GRAFICO:",
+        errore
+    )
+
+
+
+import matplotlib.pyplot as plt
+
+plt.show()
+
+
+
+# ==========================================================
+# OUTPUT FINALE
+# ==========================================================
+
+
+print(
+"""
+===============================
+PROGRAMMA DI STUDIO GENERATO
+===============================
+"""
 )
 
 
-if fig:
 
-    import matplotlib.pyplot as plt
+for e in esami:
 
-    plt.show()
+
+    print(
+        "\n",
+        e.get(
+            "nome",
+            ""
+        )
+    )
+
+
+    print(
+        "Esame:",
+        e.get(
+            "data_consigliata",
+            ""
+        )
+    )
+
+
+    print(
+        "Inizio studio:",
+        e.get(
+            "inizio_studio",
+            ""
+        )
+    )
+
+
+    print(
+        "Sessioni:",
+        len(
+            e.get(
+                "programma_studio",
+                [])
+        )
+    )
+
+
+
+print(
+"""
+===============================
+      StudyFlow AI terminato
+===============================
+"""
+)
 
 
 
