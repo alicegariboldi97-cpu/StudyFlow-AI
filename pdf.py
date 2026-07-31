@@ -8,16 +8,12 @@ from google.colab import files
 
 
 # ==========================================================
-# CARICAMENTO PDF
+# CARICAMENTO DEL PDF
 # ==========================================================
 
-def carica_pdf():
+def carica_pdf(percorso_pdf):
 
-    file_caricato = files.upload()
-
-    nome_pdf = list(file_caricato.keys())[0]
-
-    documento = fitz.open(nome_pdf)
+    documento = fitz.open(percorso_pdf)
 
     return documento
 
