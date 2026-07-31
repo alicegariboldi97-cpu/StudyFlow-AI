@@ -78,7 +78,11 @@ for esame in esami:
 
 print("\nCaricamento calendario esami...")
 
-documento = carica_pdf()
+percorso_pdf = input(
+    "Inserisci il percorso del file PDF: "
+)
+
+documento = carica_pdf(percorso_pdf)
 
 
 # ==========================================================
