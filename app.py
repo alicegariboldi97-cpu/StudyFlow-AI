@@ -3,22 +3,25 @@
 # ==========================================================
 
 from calcoli import calcola_carico_studio
+
 from pdf import (
     carica_pdf,
     estrai_testo,
     analizza_calendario
 )
+
 from planner import (
     genera_piano_esami,
     crea_programma_studio,
     ricalcola_piano
 )
+
 from grafico import crea_grafico
 
 
 
 # ==========================================================
-# INTESTAZIONE
+# INIZIO PROGRAMMA
 # ==========================================================
 
 print("""
@@ -58,6 +61,7 @@ ore_studio = float(
 
 print("\nDATI INSERITI")
 print("--------------------")
+
 
 print(
     "Nome:",
@@ -100,7 +104,7 @@ for i in range(numero_esami):
 
 
     print(
-        f"\nEsame {i+1}"
+        f"\nEsame {i + 1}"
     )
 
 
@@ -141,11 +145,12 @@ for esame in esami:
 
 
 # ==========================================================
-# CALCOLO CARICO STUDIO
+# CARICO DI STUDIO
 # ==========================================================
 
 esami = calcola_carico_studio(
-    esami
+    esami,
+    ore_studio
 )
 
 
@@ -155,7 +160,6 @@ print("--------------------")
 
 
 for esame in esami:
-
 
     print(
         esame["nome"],
@@ -169,7 +173,7 @@ for esame in esami:
 
 
 # ==========================================================
-# CARICAMENTO PDF
+# CARICAMENTO CALENDARIO PDF
 # ==========================================================
 
 print("\nCaricamento calendario esami...")
@@ -195,7 +199,7 @@ testo_completo = estrai_testo(
 
 
 # ==========================================================
-# MATCH ESAMI PDF
+# COLLEGAMENTO ESAMI PDF
 # ==========================================================
 
 esami = analizza_calendario(
@@ -206,7 +210,7 @@ esami = analizza_calendario(
 
 
 # ==========================================================
-# CREAZIONE PIANO ESAMI
+# GENERAZIONE PIANO ESAMI
 # ==========================================================
 
 esami = genera_piano_esami(
@@ -221,13 +225,12 @@ print("--------------------")
 
 for esame in esami:
 
-
     print(
         esame["nome"],
         "|",
         esame.get(
             "data_consigliata",
-            "Nessuna data"
+            "Nessuna data disponibile"
         ),
         "|",
         esame.get(
@@ -271,7 +274,6 @@ if risposta.lower() == "no":
     )
 
 
-
     esami = ricalcola_piano(
         esami,
         obiettivo
@@ -283,9 +285,7 @@ if risposta.lower() == "no":
     print("--------------------")
 
 
-
     for esame in esami:
-
 
         print(
             esame["nome"],
@@ -319,5 +319,5 @@ print("--------------------")
 
 
 print(
-    "StudyFlow AI ha completato il piano."
+    "StudyFlow AI completato."
 )
