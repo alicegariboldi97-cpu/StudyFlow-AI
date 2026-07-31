@@ -1,1 +1,9 @@
+# File temporanei Python
+__pycache__/
+*.pyc
 
+# File calendario PDF caricati dall'utente
+*.pdf
+
+# File temporanei Jupyter/Colab
+.ipynb_checkpoints/
