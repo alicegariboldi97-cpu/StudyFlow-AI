@@ -180,17 +180,15 @@ documento = carica_pdf(
 # ANALISI CALENDARIO
 # ==========================================================
 
-esami = analizza_calendario(
-    esami,
-    testo_completo
-)
-
-
-date_esami = estrai_date_esami(
+testo_completo = estrai_testo(
     documento
 )
 
 
+esami = analizza_calendario(
+    esami,
+    testo_completo
+)
 
 # ==========================================================
 # GENERAZIONE PRIMO PIANO
