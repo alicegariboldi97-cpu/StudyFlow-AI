@@ -4,15 +4,18 @@
 
 
 from calcoli import calcola_carico_studio
+
 from pdf import (
     carica_pdf,
     analizza_calendario
 )
+
 from planner import (
     genera_piano_esami,
     crea_programma_studio,
     ricalcola_piano
 )
+
 from grafico import crea_grafico
 
 
@@ -41,7 +44,6 @@ universita = input(
     "Inserisci università: "
 )
 
-
 ore_giornaliere = float(
     input(
         "Ore di studio giornaliere: "
@@ -53,10 +55,7 @@ ore_giornaliere = float(
 print("\nDATI INSERITI")
 print("--------------------")
 
-print(
-    "Nome:",
-    nome
-)
+print("Nome:", nome)
 
 print(
     "Università:",
@@ -85,7 +84,6 @@ numero_esami = int(
         "Quanti esami vuoi inserire? "
     )
 )
-
 
 
 esami = []
@@ -121,6 +119,7 @@ for i in range(numero_esami):
 
 
 
+
 print("\nESAMI INSERITI")
 print("--------------------")
 
@@ -137,8 +136,9 @@ for e in esami:
 
 
 
+
 # ==========================================================
-# CARICO STUDIO
+# CALCOLO CARICO STUDIO
 # ==========================================================
 
 
@@ -169,7 +169,7 @@ for e in esami:
 
 
 # ==========================================================
-# PDF CALENDARIO
+# CARICAMENTO PDF
 # ==========================================================
 
 
@@ -197,8 +197,9 @@ esami = analizza_calendario(
 
 
 
+
 # ==========================================================
-# CREAZIONE PIANO
+# GENERAZIONE PIANO ESAMI
 # ==========================================================
 
 
@@ -229,14 +230,6 @@ for e in esami:
         )
     )
 
-
-
-
-# grafico iniziale
-
-crea_grafico(
-    esami
-)
 
 
 
@@ -288,6 +281,7 @@ if risposta.lower() == "no":
 
     for e in esami:
 
+
         print(
             e["nome"],
             "|",
@@ -302,24 +296,18 @@ if risposta.lower() == "no":
 
 
 
-    crea_grafico(
-        esami
-    )
-
-
-
 else:
 
-
     print(
-        "\nPerfetto! Piano confermato."
+        "\nPiano confermato."
     )
+
 
 
 
 
 # ==========================================================
-# PROGRAMMA DI STUDIO
+# CREAZIONE PROGRAMMA STUDIO
 # ==========================================================
 
 
@@ -328,6 +316,26 @@ esami = crea_programma_studio(
     ore_giornaliere
 )
 
+
+
+
+
+# ==========================================================
+# GRAFICO
+# ==========================================================
+
+
+crea_grafico(
+    esami
+)
+
+
+
+
+
+# ==========================================================
+# OUTPUT FINALE
+# ==========================================================
 
 
 print(
@@ -350,7 +358,16 @@ for e in esami:
 
 
     print(
-        "Inizio:",
+        "Esame:",
+        e.get(
+            "data_consigliata",
+            ""
+        )
+    )
+
+
+    print(
+        "Inizio studio:",
         e.get(
             "inizio_studio",
             ""
@@ -359,7 +376,7 @@ for e in esami:
 
 
     print(
-        "Giorni:",
+        "Sessioni:",
         len(
             e.get(
                 "programma_studio",
@@ -373,7 +390,7 @@ for e in esami:
 print(
 """
 ===============================
-      StudioFlow AI terminato
+      StudyFlow AI terminato
 ===============================
 """
 )
