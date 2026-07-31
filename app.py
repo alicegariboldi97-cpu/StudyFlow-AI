@@ -297,7 +297,6 @@ esami = crea_programma_studio(
 )
 
 
-
 # ==========================================================
 # GRAFICO
 # ==========================================================
@@ -394,69 +393,6 @@ for e in esami:
             e.get(
                 "programma_studio",
                 [])
-        )
-    )
-
-
-
-print(
-"""
-===============================
-      StudyFlow AI terminato
-===============================
-"""
-)
-
-
-
-# ==========================================================
-# OUTPUT FINALE
-# ==========================================================
-
-
-print(
-"""
-===============================
-PROGRAMMA DI STUDIO GENERATO
-===============================
-"""
-)
-
-
-
-for e in esami:
-
-    print(
-        "\n",
-        e["nome"]
-    )
-
-
-    print(
-        "Esame:",
-        e.get(
-            "data_consigliata",
-            ""
-        )
-    )
-
-
-    print(
-        "Inizio studio:",
-        e.get(
-            "inizio_studio",
-            ""
-        )
-    )
-
-
-    print(
-        "Sessioni:",
-        len(
-            e.get(
-                "programma_studio",
-                []
-            )
         )
     )
 
