@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from datetime import datetime
 
 
@@ -6,75 +7,103 @@ def crea_grafico(esami):
 
     print("\nCreazione grafico StudyFlow AI...")
 
-    nomi = []
-    date_inizio = []
-    durate = []
+
+    dati = []
 
 
     for esame in esami:
 
-        if esame.get("data_consigliata") in [
-            None,
-            "Nessuna data disponibile"
-        ]:
+        nome = esame.get("nome", "Senza nome")
+        inizio = esame.get("inizio_studio")
+        fine = esame.get("data_consigliata")
+
+
+        if not inizio or not fine:
             continue
 
-        if "inizio_studio" not in esame:
+
+        if fine == "Nessuna data disponibile":
             continue
 
 
         try:
 
-            inizio = datetime.strptime(
-                esame["inizio_studio"],
+            data_inizio = datetime.strptime(
+                inizio,
                 "%d/%m/%Y"
             )
 
-            fine = datetime.strptime(
-                esame["data_consigliata"],
+            data_fine = datetime.strptime(
+                fine,
                 "%d/%m/%Y"
             )
 
 
-            giorni = (fine - inizio).days
+            giorni = (
+                data_fine - data_inizio
+            ).days
 
 
-            if giorni <= 0:
+            if giorni < 1:
                 giorni = 1
 
 
-            nomi.append(esame["nome"])
-            date_inizio.append(inizio)
-            durate.append(giorni)
-
-
-        except Exception as e:
-
-            print(
-                "Errore grafico per",
-                esame.get("nome"),
-                ":",
-                e
+            dati.append(
+                (
+                    nome,
+                    data_inizio,
+                    giorni
+                )
             )
 
 
-    if len(nomi) == 0:
+        except Exception as errore:
+
+            print(
+                "Errore nel grafico:",
+                nome,
+                errore
+            )
+
+
+    if not dati:
 
         print(
-            "Nessun esame disponibile per il grafico"
+            "Nessun dato valido per creare il grafico"
         )
 
         return
 
 
 
-    fig, ax = plt.subplots(figsize=(12,7))
+    nomi = [
+        x[0]
+        for x in dati
+    ]
+
+
+    inizi = [
+        x[1]
+        for x in dati
+    ]
+
+
+    durate = [
+        x[2]
+        for x in dati
+    ]
+
+
+
+    fig, ax = plt.subplots(
+        figsize=(12,7)
+    )
 
 
     ax.barh(
         nomi,
         durate,
-        left=date_inizio
+        left=inizi
     )
 
 
@@ -82,23 +111,32 @@ def crea_grafico(esami):
         "Piano di studio StudyFlow AI"
     )
 
+
     ax.set_xlabel(
-        "Periodo di preparazione"
+        "Periodo di studio"
     )
+
 
     ax.set_ylabel(
         "Esami"
     )
 
 
-    plt.xticks(rotation=45)
+    ax.xaxis.set_major_formatter(
+        mdates.DateFormatter("%d/%m/%Y")
+    )
+
+
+    plt.xticks(
+        rotation=45
+    )
+
 
     plt.tight_layout()
 
 
-    # MOSTRA IL GRAFICO IN COLAB
+    # fondamentale per Colab
     plt.show()
 
 
-    # evita che Colab mostri solo Figure(...)
     return fig
